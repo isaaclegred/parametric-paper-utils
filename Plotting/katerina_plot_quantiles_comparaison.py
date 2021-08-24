@@ -77,7 +77,7 @@ pressures5 = data[5,:]*c_cgs*c_cgs
 pressures95 = data[95,:]*c_cgs*c_cgs
 
 
-plt.plot(baryon_density,pressures5[1:],c='r',lw=2.5,label='PRIOR(PARAMETRIC)')
+plt.plot(baryon_density,pressures5[1:],c='r',lw=2.5,label='PRIOR(SPECTRAL)')
 plt.plot(baryon_density,pressures95[1:],c='r',lw=2.5)
 
 

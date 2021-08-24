@@ -30,16 +30,21 @@ do
     cd Utils/Plotting
     
     NP_SAMPS=$MAIN_DIR"/corrected_np_all_current_post.csv"
-    PAR_SAMPS=$MAIN_DIR"/corrected_par_all_current_post.csv"
     
+    
+
     NPPRIOR="PRIOR(NONPARAMETRIC)"
-    PARPRIOR="PRIOR(PARAMETRIC)"
     PSR="PSR"
     PSRGW="PSR+GW"
     NP="NONPARAMETRIC"
-    PAR="PARAMETRIC"
 
-    DEFAULT_COLOR_SCHEME="--color $NP cyan ""--color $NPPRIOR blue "" --color $PAR magenta ""--color  $PARPRIOR red"
+    # These things will have to change for each parametric instance
+    PAR_SAMPS=$MAIN_DIR"/corrected_sp_all_current_post.csv"
+    PARPRIOR="PRIOR(SPECTRAL)"
+    PAR="SPECTRAL"
+    
+    
+    DEFAULT_COLOR_SCHEME="--color $NP deepskyblue ""--color $NPPRIOR blue "" --color $PAR magenta ""--color  $PARPRIOR red"
         
 
     kde-corner-samples \
