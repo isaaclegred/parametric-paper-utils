@@ -29,7 +29,7 @@ do
     MAIN_DIR=$(pwd)
     cd Utils/Plotting
     
-    NP_SAMPS=$MAIN_DIR"/corrected_np_all_current_post.csv"
+    NP_SAMPS=$MAIN_DIR"/corrected_np_all_post.csv"
     
     
 
@@ -39,18 +39,19 @@ do
     NP="NONPARAMETRIC"
 
     # These things will have to change for each parametric instance
-    PAR_SAMPS=$MAIN_DIR"/corrected_sp_all_current_post.csv"
+    PAR_SAMPS=$MAIN_DIR"/corrected_sp_all_post.csv"
     PARPRIOR="PRIOR(SPECTRAL)"
     PAR="SPECTRAL"
     
     
     DEFAULT_COLOR_SCHEME="--color $NP deepskyblue ""--color $NPPRIOR blue "" --color $PAR magenta ""--color  $PARPRIOR red"
-        
+    DEFAULT_VARIABLE_RANGES="--column-range Mmax 1.8 3.0"
 
     kde-corner-samples \
         Mmax "R(M=1.4)" \
         --column-label 'Mmax' '$M_{\mathrm{max}}\ [M_{\odot}]$'\
         --column-label 'R(M=1.4)' '$R_{1.4}\ [\mathrm {km}]$'\
+        $DEFAULT_VARIABLE_RANGES\
         -s $NP $NP_SAMPS \
         --weight-column $NP logweight_total\
         --weight-column-is-log $NP logweight_total\
@@ -61,10 +62,10 @@ do
         --weight-column-is-log $PAR logweight_total\
         $DEFAULT_COLOR_SCHEME \
         --output-dir $MAIN_DIR \
-        --tag "Mmax_R_1p4" \
+        --tag "Mmax_R_1p4_spectral" \
         --num-proc 2 \
         --num-points $NUM_POINTS \
-        --level 0.9 \
+        --level .9\
         --legend \
         --no-scatter\
         --grid \

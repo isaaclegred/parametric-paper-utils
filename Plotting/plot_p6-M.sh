@@ -39,7 +39,7 @@ do
     NP="NONPARAMETRIC"
     PAR="PARAMETRIC"
 
-    DEFAULT_COLOR_SCHEME="--color $NP cyan ""--color $NPPRIOR blue "" --color $PAR magenta ""--color  $PARPRIOR red"
+    DEFAULT_COLOR_SCHEME="--color $NP deepskyblue ""--color $NPPRIOR blue "" --color $PAR magenta ""--color  $PARPRIOR red"
 
 
     kde-corner-samples \

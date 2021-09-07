@@ -1,16 +1,16 @@
 #!/bin/bash
 counter=$1
-counter=$((counter+2))
 echo $counter
-MAX_NUM_SAMPLES=320000
+MAX_NUM_SAMPLES=350000
 
 #Sometimes need this
 # --copy-column  "logweight_Romani_J1810" 
 
 
 # These should be the only things that *need* to change
-NONPAR_EOS_DIR="/home/philippe.landry/gpr-eos-stacking/EoS/mrgagn/"
-NONPAR_EOS_DIR_cs2c2="/home/isaac.legred/local_mrgagn_big_with_cs2/"
+NONPAR_EOS_DIR="/home/philippe.landry/nseos/eos/gp/mrgagn/"
+NONPAR_EOS_DIR_cs2c2="/home/isaac.legred/local_mrgagn_big_with_cs2c2/"
+
 SPECTRAL_EOS_DIR="/home/isaac.legred/parametric-eos-priors/eos_draws/production_eos_draw_spectral/"
 PIECEWISE_EOS_DIR="/home/isaac.legred/parametric-eos-priors/eos_draws/production_eos_draw_piecewise/"
 SOS_EOS_DIR="/home/isaac.legred/parametric-eos-priors/eos_draws/production_eos_draw_sos/"
@@ -25,6 +25,7 @@ TAGS="sp_all pp_all cs_all"
 EOS_DIR_TAGS="$SPECTRAL_EOS_DIR $PIECEWISE_EOS_DIR $SOS_EOS_DIR"
 EOS_CS2C2_DIR_TAGS="$SPECTRAL_EOS_DIR $PIECEWISE_EOS_DIR $SOS_EOS_DIR"
 ##############################################################
+# This may need "/home/isaac.legred/CompParNonParRuns/Plots/All/corrected_nonparametric_post.csv"to change if you change the overall convention
 
 echo $TAGS
 # This is kinda a silly thing to do, but it will work for now
@@ -64,84 +65,20 @@ PRETAGS=($TAGS)
 PRETAG=${PRETAGS[$counter]}
 
 TAG="/corrected_"$PRETAG"_post.csv"
+OUTTAG="/corrected_"$PRETAG"_post_test.csv"
 EOS_DIRS=($EOS_DIR_TAGS)
 EOS_DIR=${EOS_DIRS[$counter]}
 EOS_DIRS_CS2=($EOS_CS2C2_DIR_TAGS)
 EOS_DIR_cs2c2=${EOS_DIRS_CS2[$counter]}
 INPATH=$MAIN_DIR$TAG
-echo $INPATH
-OUTPATH=$INPATH
+OUTPATH=$MAIN_DIR$OUTTAG
 EOS_NUM_PER_DIR=${EOS_COUNT_ARR[$counter]}
 
-    
-# # # Get the max masses
-$(which process2extrema) \
-    $OUTPATH \
-    $OUTPATH \
-    M\
-    --copy-column  "logweight_total" \
-    --new-column M Mmax Mmin \
-    --column-range M 0.1 4.0 \
-    --eos-column eos \
-    --eos-dir ${EOS_DIR} \
-    --eos-num-per-dir ${EOS_NUM_PER_DIR} \
-    --eos-basename 'macro-draw-%(draw)06d.csv' \
-    --max-num-samples $MAX_NUM_SAMPLES \
-    --Verbose
 
-# look up pressures
-$(which process2samples) \
+$(which process2count) \
+    $INPATH\
     $OUTPATH \
-    $OUTPATH \
-    baryon_density \
-    pressurec2 energy_densityc2 \
-    --eos-column eos \
-    --eos-dir ${EOS_DIR} \
-    --eos-num-per-dir ${EOS_NUM_PER_DIR} \
-    --eos-basename 'eos-draw-%(draw)06d.csv' \
-    --reference-value 2.8e14 \
-    --reference-value 5.6e14 \
-    --reference-value 1.68e15 \
-    --reference-value 1.96e15 \
-    --max-num-samples $MAX_NUM_SAMPLES \
-    --Verbose
-
-# # look up macroscopic paramers
-$(which process2samples) \
-    $OUTPATH \
-    $OUTPATH \
-    M \
-    R Lambda \
-    --eos-column eos \
-    --eos-dir ${EOS_DIR} \
-    --eos-num-per-dir ${EOS_NUM_PER_DIR} \
-    --eos-basename 'macro-draw-%(draw)06d.csv' \
-    --selection-rule random \
-    --branches-basename 'macro-draw-%(draw)06d-branches.csv' rhoc start_baryon_density end_baryon_density \
-    --branches-dir $EOS_DIR_cs2c2 \
-    --default-value R 4.13 \
-    --default-value Lambda 0.0 \
-    --reference-value 1.4 \
-    --max-num-samples $MAX_NUM_SAMPLES \
-    --Verbose
-
-# Have to do this becuase need default value to be different
-$(which process2samples) \
-    $OUTPATH \
-    $OUTPATH \
-    M \
-    R Lambda\
-    --eos-column eos \
-    --eos-dir ${EOS_DIR} \
-    --eos-num-per-dir ${EOS_NUM_PER_DIR} \
-    --eos-basename 'macro-draw-%(draw)06d.csv' \
-    --selection-rule random \
-    --branches-basename 'macro-draw-%(draw)06d-branches.csv' rhoc start_baryon_density end_baryon_density \
-    --branches-dir $EOS_DIR_cs2c2 \
-    --default-value R 5.91 \
-    --default-value Lambda 0 \
-    --reference-value 2.0 \
-    --max-num-samples $MAX_NUM_SAMPLES \
+    branch\
     --copy-column  "logweight_total" \
     --copy-column "Mmax" \
     --copy-column "pressurec2(baryon_density=2.8e+14)" \
@@ -152,10 +89,19 @@ $(which process2samples) \
     --copy-column "energy_densityc2(baryon_density=5.6e+14)"\
     --copy-column "energy_densityc2(baryon_density=1.68e+15)" \
     --copy-column "energy_densityc2(baryon_density=1.96e+15)" \
+    --copy-column "R(M=1.4)" \
+    --copy-column "R(M=2.0)" \
     --copy-column "Lambda(M=1.4)" \
-    --copy-column "R(M=1.4)"\
+    --copy-column "Lambda(M=2.0)" \
+    --copy-column "DeltaR(2.0-1.4)" \
+    --copy-column "rhoc(M@Mmax)" \
+    --copy-column "cs2c2max"\
+    --copy-column "baryon_density(cs2c2@cs2c2max)"\
+    --copy-column "pressurec2(cs2c2@cs2c2max)"\
+    --eos-column eos \
+    --eos-dir ${EOS_DIR_cs2c2} \
+    --eos-num-per-dir ${EOS_NUM_PER_DIR} \
+    --eos-basename 'macro-draw-%(draw)06d-branches.csv' \
+    --max-num-samples $MAX_NUM_SAMPLES \
     --Verbose
-
-
-
 

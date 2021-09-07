@@ -1,5 +1,5 @@
 #!/bin/bash
-TAGS="np_all_current par_all_current"
+TAGS="np_all sp_all"
 COLUMNS="Mmax"
 RANGE=".01 .8"
 WRITETAG=$COLUMNS"_prior"

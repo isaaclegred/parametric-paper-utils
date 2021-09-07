@@ -29,17 +29,17 @@ do
     MAIN_DIR=$(pwd)
     cd Utils/Plotting
     
-    NP_SAMPS=$MAIN_DIR"/corrected_np_all_current_post.csv"
-    PAR_SAMPS=$MAIN_DIR"/corrected_par_all_current_post.csv"
+    NP_SAMPS=$MAIN_DIR"/corrected_np_all_post.csv"
+    PAR_SAMPS=$MAIN_DIR"/corrected_sp_all_post.csv"
     
     NPPRIOR="PRIOR(NONPARAMETRIC)"
-    PARPRIOR="PRIOR(PARAMETRIC)"
+    PARPRIOR="PRIOR(SPECTRAL)"
     PSR="PSR"
     PSRGW="PSR+GW"
     NP="NONPARAMETRIC"
-    PAR="PARAMETRIC"
+    PAR="SPECTRAL"
 
-    DEFAULT_COLOR_SCHEME="--color $NP cyan ""--color $NPPRIOR blue "" --color $PAR magenta ""--color  $PARPRIOR red"
+    DEFAULT_COLOR_SCHEME="--color $NP deepskyblue ""--color $NPPRIOR blue "" --color $PAR magenta ""--color  $PARPRIOR red"
         
 
     kde-corner-samples \
@@ -68,7 +68,7 @@ do
         --weight-column-is-log $PAR Mmax_prior_kde \
         $DEFAULT_COLOR_SCHEME \
         --output-dir $MAIN_DIR \
-        --tag "Mmax_R_1p4_normalized" \
+        --tag "Mmax_R_1p4_spectral_normalized" \
         --num-proc 2 \
         --num-points $NUM_POINTS \
         --level 0.9 \

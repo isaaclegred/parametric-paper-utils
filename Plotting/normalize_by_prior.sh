@@ -6,8 +6,8 @@ MAX_NUM_SAMPLES=100000
 
 
 # This may need to change if you change the overall convention
-TAGS="np_all_current par_all_current"
-BANDWIDTH_TAGS=".12 .07"
+TAGS="np_all sp_all"
+BANDWIDTH_TAGS=".07 .06"
 COLUMN_NAMES="Mmax"
 # This is kinda a silly thing to do, but it will work for now
 # Hardcode this if it's easier than worrying about where

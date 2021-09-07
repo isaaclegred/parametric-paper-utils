@@ -1,6 +1,6 @@
 universe   = vanilla
 Executable = ./get_branch_data.sh
-Arguments  =
+Arguments  = "$(Process)"
 Log        = ./run_branch/branch.log
 Output     = ./run_branch/branch.out
 Error      = ./run_branch/branch.error
