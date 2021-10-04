@@ -1,29 +1,12 @@
 #!/bin/bash
-counter=$(($1 + 2)) 
+counter="$1"
 echo $counter
+TAGS="$2"
+EOS_DIR_TAGS="$3"
+EOS_CS2C2_DIR_TAGS="$4"
+EOS_PER_DIR="$5"
+
 MAX_NUM_SAMPLES=350000
-
-#Sometimes need this
-# --copy-column  "logweight_Romani_J1810" 
-
-
-# These should be the only things that *need* to change
-NONPAR_EOS_DIR="/home/philippe.landry/gpr-eos-stacking/EoS/mrgagn/"
-NONPAR_EOS_DIR_cs2c2="/home/isaac.legred/local_mrgagn_big_with_cs2/"
-SPECTRAL_EOS_DIR="/home/isaac.legred/parametric-eos-priors/eos_draws/production_eos_draw_spectral/"
-PIECEWISE_EOS_DIR="/home/isaac.legred/parametric-eos-priors/eos_draws/production_eos_draw_piecewise/"
-SOS_EOS_DIR="/home/isaac.legred/parametric-eos-priors/eos_draws/production_eos_draw_sos/"
-
-
-# Each of these things should be changed on a run by run basis
-##############################################################
-EOS_PER_DIR="100 100 100"
-
-TAGS="sp_all pp_all cs_all"
-
-EOS_DIR_TAGS="$SPECTRAL_EOS_DIR $PIECEWISE_EOS_DIR $SOS_EOS_DIR"
-EOS_CS2C2_DIR_TAGS="$SPECTRAL_EOS_DIR $PIECEWISE_EOS_DIR $SOS_EOS_DIR"
-##############################################################
 echo $TAGS
 # This is kinda a silly thing to do, but it will work for now
 # Hardcode this if it's easier than worrying about where
@@ -68,13 +51,13 @@ EOS_DIR=${EOS_DIRS[$counter]}
 EOS_DIRS_CS2=($EOS_CS2C2_DIR_TAGS)
 EOS_DIR_cs2c2=${EOS_DIRS_CS2[$counter]}
 INPATH=$MAIN_DIR$TAG
-OUTPATH=$MAIN_DIR$OUTTAG
+OUTPATH=$INPATH
 EOS_NUM_PER_DIR=${EOS_COUNT_ARR[$counter]}
 
 
 
-# look up macroscopic paramers
-# Compute rho_c (M @ Mmax)
+#look up macroscopic paramers
+#Compute rho_c (M @ Mmax)
 $(which process2samples) \
     $INPATH \
     $OUTPATH \
@@ -90,7 +73,8 @@ $(which process2samples) \
     --branches-dir ${EOS_DIR_cs2c2} \
     --max-num-samples $MAX_NUM_SAMPLES \
     --reference-value-column Mmax \
-    --Verbose
+    --overwrite\
+    -v
 # Compute cs2c2max for rho < rhoc(M @ Mmax)
 $(which process2extrema) \
     $OUTPATH \
@@ -120,17 +104,19 @@ $(which process2extrema) \
     --eos-num-per-dir ${EOS_NUM_PER_DIR} \
     --eos-basename 'eos-draw-%(draw)06d.csv' \
     --max-num-samples $MAX_NUM_SAMPLES \
-    --Verbose
+    -v
 
+#--selection-rule "nearest_neighbor" \
 $(which process2samples) \
     $OUTPATH \
     $OUTPATH \
     cs2c2 \
     baryon_density pressurec2 \
-    --selection-rule "nearest_neighbor" \
     --eos-column eos \
     --eos-dir ${EOS_DIR_cs2c2} \
+    --selection-rule "nearest_neighbor" \
     --eos-num-per-dir ${EOS_NUM_PER_DIR} \
     --eos-basename 'eos-draw-%(draw)06d.csv' \
     --reference-value-column cs2c2max \
+    --overwrite\
     -v

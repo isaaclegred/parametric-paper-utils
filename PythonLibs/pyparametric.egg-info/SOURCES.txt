@@ -1,0 +1,7 @@
+setup.py
+pyparametric/__init__.py
+pyparametric/quantile_plots.py
+pyparametric.egg-info/PKG-INFO
+pyparametric.egg-info/SOURCES.txt
+pyparametric.egg-info/dependency_links.txt
+pyparametric.egg-info/top_level.txt

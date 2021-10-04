@@ -3,29 +3,12 @@ counter=$1
 echo $counter
 MAX_NUM_SAMPLES=350000
 
-#Sometimes need this
-# --copy-column  "logweight_Romani_J1810" 
-
-
-# These should be the only things that *need* to change
-NONPAR_EOS_DIR="/home/philippe.landry/nseos/eos/gp/mrgagn/"
-NONPAR_EOS_DIR_cs2c2="/home/isaac.legred/local_mrgagn_big_with_cs2c2/"
-
-SPECTRAL_EOS_DIR="/home/isaac.legred/parametric-eos-priors/eos_draws/production_eos_draw_spectral/"
-PIECEWISE_EOS_DIR="/home/isaac.legred/parametric-eos-priors/eos_draws/production_eos_draw_piecewise/"
-SOS_EOS_DIR="/home/isaac.legred/parametric-eos-priors/eos_draws/production_eos_draw_sos/"
-
-
-# Each of these things should be changed on a run by run basis
-##############################################################
-EOS_PER_DIR="100 100 100"
-
-TAGS="sp_all pp_all cs_all"
-
-EOS_DIR_TAGS="$SPECTRAL_EOS_DIR $PIECEWISE_EOS_DIR $SOS_EOS_DIR"
-EOS_CS2C2_DIR_TAGS="$SPECTRAL_EOS_DIR $PIECEWISE_EOS_DIR $SOS_EOS_DIR"
-##############################################################
-# This may need "/home/isaac.legred/CompParNonParRuns/Plots/All/corrected_nonparametric_post.csv"to change if you change the overall convention
+counter="$1"
+echo $counter
+TAGS="$2"
+EOS_DIR_TAGS="$3"
+EOS_CS2C2_DIR_TAGS="$4"
+EOS_PER_DIR="$5"
 
 echo $TAGS
 # This is kinda a silly thing to do, but it will work for now
@@ -71,7 +54,7 @@ EOS_DIR=${EOS_DIRS[$counter]}
 EOS_DIRS_CS2=($EOS_CS2C2_DIR_TAGS)
 EOS_DIR_cs2c2=${EOS_DIRS_CS2[$counter]}
 INPATH=$MAIN_DIR$TAG
-OUTPATH=$MAIN_DIR$OUTTAG
+OUTPATH=$INPATH
 EOS_NUM_PER_DIR=${EOS_COUNT_ARR[$counter]}
 
 
@@ -103,5 +86,5 @@ $(which process2count) \
     --eos-num-per-dir ${EOS_NUM_PER_DIR} \
     --eos-basename 'macro-draw-%(draw)06d-branches.csv' \
     --max-num-samples $MAX_NUM_SAMPLES \
-    --Verbose
+    -v
 

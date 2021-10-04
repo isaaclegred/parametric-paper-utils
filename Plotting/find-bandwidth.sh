@@ -1,14 +1,14 @@
 #!/bin/bash
-TAGS="np_all sp_all"
-COLUMNS="Mmax"
-RANGE=".01 .8"
+TAGS="pp_all cs_all"
+COLUMNS="R(M=1.4)"
+RANGE=".01 3"
 WRITETAG=$COLUMNS"_prior"
 
 for TAG in $TAGS
 do
     INPATH="corrected_"$TAG"_post.csv"
-    COLUMNS="Mmax"
-    echo $COLUMNS
+    COLUMNS="$COLUMNS"
+    echo "$COLUMNS"
     optimize-bandwidth \
         $INPATH \
         $COLUMNS \

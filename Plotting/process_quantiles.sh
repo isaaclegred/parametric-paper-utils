@@ -3,14 +3,14 @@
 ### test extracting quantiles
 #
 
-counter=$1
+counter="$1"
+echo "counter in add-covariates"
+echo $counter
+TAGS="$2"
+EOS_DIR_TAGS="$3"
+EOS_CS2C2_DIR_TAGS="$4"
+EOS_PER_DIR="$5"
 
-export NONPAR_EOS_DIR="/home/philippe.landry/nseos/eos/gp/mrgagn/"
-export SPECTRAL_EOS_DIR="/home/isaac.legred/parametric-eos-priors/eos_draws/production_eos_draw_spectral/"
-export PIECEWISE_EOS_DIR="/home/isaac.legred/parametric-eos-priors/eos_draws/production_eos_draw_piecewise/"
-
-EOS_PER_DIR="1000 100 100"
-TAGS="np_all sp_all pp_all"
 
 cd ../..
 MAIN_DIR=$(pwd)
@@ -18,21 +18,20 @@ cd Utils/Plotting
 
 
 # #echo \
-EOS_DIR_TAGS="$NONPAR_EOS_DIR $SPECTRAL_EOS_DIR $PIECEWISE_EOS_DIR"
-EOS_COUNT_ARR=($EOS_PER_DIR)
+
+
 
 
 PRETAGS=($TAGS)
 PRETAG=${PRETAGS[$counter]}
-
 TAG=$PRETAG"_post.csv"
+
 EOS_DIRS=($EOS_DIR_TAGS)
 EOS_DIR=${EOS_DIRS[$counter]}
-INPATH=$POST_DIR_5$TAG
-echo $INPATH
-OUTPATH=$INPATH
+
+EOS_COUNT_ARR=($EOS_PER_DIR)
 EOS_NUM_PER_DIR=${EOS_COUNT_ARR[$counter]}
-counter=$((counter+1))
+
 
 process2quantiles \
     $MAIN_DIR"/"$TAG \

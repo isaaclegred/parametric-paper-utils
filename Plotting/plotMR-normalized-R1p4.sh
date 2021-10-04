@@ -10,13 +10,9 @@ NUM_POINTS=101
 MAX_NUM_SAMPLES=100000
 
 
-
-
 #---
 
 # plot different posteriors for the same set of prior draws
-# this is irrelevant, at this point all of the
-# data is already collated, just need one tag value
 TAGS="/home/philippe.landry/nseos/eos/gp/mrgagn/"
 
 for TAG in $TAGS
@@ -29,70 +25,59 @@ do
     # This script should only be called by condor, and in particular with
     # the submit file that requires you to be in the correct directory anways
     # this shouldn't cause big problems for now
-  
     cd ../..
     MAIN_DIR=$(pwd)
     cd Utils/Plotting
     
     NP_SAMPS=$MAIN_DIR"/corrected_np_all_post.csv"
     PAR_SAMPS=$MAIN_DIR"/corrected_sp_all_post.csv"
+    REWEIGHTING_FACTOR="R(M=1.4)_prior_kde"
     
     NPPRIOR="PRIOR(NONPARAMETRIC)"
-    PARPRIOR="PRIOR(PARAMETRIC)"
+    PARPRIOR="PRIOR(SPECTRAL)"
     PSR="PSR"
     PSRGW="PSR+GW"
     NP="NONPARAMETRIC"
-    PAR="PARAMETRIC"
+    PAR="SPECTRAL"
+
     DEFAULT_COLOR_SCHEME="--color $NP deepskyblue ""--color $NPPRIOR blue "" --color $PAR magenta ""--color  $PARPRIOR red"
- 
+        
+
     kde-corner-samples \
-        Mmax 'R(M=1.4)' 'R(M=2.0)' 'Lambda(M=1.4)' 'Lambda(M=2.0)' 'pressurec2(baryon_density=5.6e+14)' 'pressurec2(baryon_density=1.68e+15)' \
-        --column-label Mmax '$M_\mathrm{max}\ [M_\odot]$' \
-        --column-range Mmax 1.90 3.0 \
-        --column-bandwidth Mmax 0.04 \
-        --column-label 'R(M=1.4)' '$R_{1.4}\ [\mathrm{km}]$' \
-        --column-range 'R(M=1.4)' 8.5 16.0 \
-        --column-bandwidth 'R(M=1.4)' 0.20 \
-        --column-label 'R(M=2.0)' '$R_{2.0}\ [\mathrm{km}]$' \
-        --column-range 'R(M=2.0)' 9.1 14.9 \
-        --column-bandwidth 'R(M=2.0)' 0.20 \
-        --column-label 'Lambda(M=1.4)' '$\Lambda_{1.4}$' \
-        --column-range 'Lambda(M=1.4)' 1.0 999.0 \
-        --column-bandwidth 'Lambda(M=1.4)' 40 \
-        --column-label 'Lambda(M=2.0)' '$\Lambda_{2.0}$' \
-        --column-range 'Lambda(M=2.0)' 1.0 150.0 \
-        --column-bandwidth 'Lambda(M=2.0)' 5 \
-        --logcolumn 'pressurec2(baryon_density=5.6e+14)' \
-        --column-label 'pressurec2(baryon_density=5.6e+14)' '$\log_{10}\left(p_{2.0}/c^2\ [\mathrm{g}/\mathrm{cm}^3]\right)$' \
-        --column-range 'pressurec2(baryon_density=5.6e+14)' 12.9 14.2 \
-        --column-bandwidth 'pressurec2(baryon_density=5.6e+14)' 0.10 \
-        --column-multiplier "pressurec2(baryon_density=5.6e+14)" .43429\
-        --logcolumn 'pressurec2(baryon_density=1.68e+15)' \
-        --column-label 'pressurec2(baryon_density=1.68e+15)' '$\log_{10}\left(p_{6.0}/c^2\ [\mathrm{g}/\mathrm{cm}^3]\right)$' \
-        --column-range 'pressurec2(baryon_density=1.68e+15)' 14.2 15.5 \
-        --column-bandwidth 'pressurec2(baryon_density=1.68e+15)' 0.10 \
-        --column-multiplier "pressurec2(baryon_density=1.68e+15)" .43429\
+        Mmax "R(M=1.4)" \
+        --column-label 'Mmax' '$M_{\mathrm{max}}\ [M_{\odot}]$'\
+        --column-label 'R(M=1.4)' '$R_{1.4}\ [\mathrm {km}]$'\
         -s $NP $NP_SAMPS \
         --weight-column $NP logweight_total\
         --weight-column-is-log $NP logweight_total\
         -s $NPPRIOR $NP_SAMPS\
         -s $PARPRIOR $PAR_SAMPS\
         -s $PAR $PAR_SAMPS \
-        $DEFAULT_COLOR_SCHEME\
         --weight-column $PAR logweight_total\
         --weight-column-is-log $PAR logweight_total\
+        --weight-column $NPPRIOR "$REWEIGHTING_FACTOR" \
+        --invert-weight-column $NPPRIOR "$REWEIGHTING_FACTOR" \
+        --weight-column-is-log $NPPRIOR "$REWEIGHTING_FACTOR" \
+        --weight-column $PARPRIOR "$REWEIGHTING_FACTOR" \
+        --invert-weight-column $PARPRIOR "$REWEIGHTING_FACTOR" \
+        --weight-column-is-log $PARPRIOR "$REWEIGHTING_FACTOR" \
+        --weight-column $NP "$REWEIGHTING_FACTOR" \
+        --invert-weight-column $NP "$REWEIGHTING_FACTOR" \
+        --weight-column-is-log $NP "$REWEIGHTING_FACTOR" \
+        --weight-column $PAR "$REWEIGHTING_FACTOR" \
+        --invert-weight-column $PAR "$REWEIGHTING_FACTOR" \
+        --weight-column-is-log $PAR "$REWEIGHTING_FACTOR" \
+        $DEFAULT_COLOR_SCHEME \
         --output-dir $MAIN_DIR \
-        --tag "covariates-newnicer-comparative-events" \
-        --num-proc 8 \
+        --tag "Mmax_R_1p4_spectral_normalized" \
+        --num-proc 2 \
         --num-points $NUM_POINTS \
         --level 0.9 \
         --legend \
+        --no-scatter\
         --grid \
         --rotate-xticklabels 90 \
-        --figwidth 11.8 \
-        --figheight 11.8 \
-        --Verbose \
-        --no-scatter \
-        --Verbose 
-        
+        --figwidth 6 \
+        --figheight 6 \
+        --Verbose         
 done
