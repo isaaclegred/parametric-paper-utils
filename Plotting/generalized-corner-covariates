@@ -10,7 +10,14 @@ NUM_POINTS=101
 MAX_NUM_SAMPLES=100000
 
 
-
+NPPRIOR="PRIOR(NONPARAMETRIC)"
+SPPRIOR="SPECTRAL(PARAMETRIC)"
+PSR="PSR"
+PSRGW="PSR+GW"
+NP="NONPARAMETRIC"
+SP="SPECTRAL"
+NP_REW="NONPARAMETRIC(REWEIGHTED-M)"
+SP_REW="SPECTRAL(REWEIGHTED-M)"
 
 #---
 
@@ -33,18 +40,31 @@ do
     cd ../..
     MAIN_DIR=$(pwd)
     cd Utils/Plotting
+
+    THIS_TAG="compare_r1p4_reweighting_sp_np"
     
-    NP_SAMPS=$MAIN_DIR"/corrected_np_all_post.csv"
-    PAR_SAMPS=$MAIN_DIR"/corrected_sp_all_post.csv"
+    SAMPS1=$MAIN_DIR"/corrected_np_all_post.csv"
+    SAMPS2=$MAIN_DIR"/corrected_sp_all_post.csv"
+
+    IN1="$NP"
+    IN2="$SP"
+    OUT1="$NP_REW"
+    OUT2="$SP_REW"
+
+    NEW_WEIGHT="Mmax_prior_kde"
     
-    NPPRIOR="PRIOR(NONPARAMETRIC)"
-    PARPRIOR="PRIOR(PARAMETRIC)"
-    PSR="PSR"
-    PSRGW="PSR+GW"
-    NP="NONPARAMETRIC"
-    PAR="PARAMETRIC"
-    DEFAULT_COLOR_SCHEME="--color $NP deepskyblue ""--color $NPPRIOR blue "" --color $PAR magenta ""--color  $PARPRIOR red"
- 
+    DEFAULT_COLOR_SCHEME="--color $OUT1 deepskyblue ""--color $IN2 blue "" --color $OUT2 magenta ""--color  $IN2 red"
+    
+    SPECIFIC_COLOR_SCHEME="--color $IN1 deepskyblue ""--color $OUT1 teal "" --color $IN2 magenta ""--color  $OUT2 orange "
+
+    COLOR_SCHEME="$SPECIFIC_COLOR_SCHEME"
+
+
+    # This would give prior1, posterior1, prior2, posterior2
+    DEFAULT_WEIGHT_ARGS="--weight-column $OUT1 logweight_total --weight-column-is-log $OUT1 logweight_total --weight-column $OUT2 logweight_total --weight-column-is-log $OUT2 logweight_total"
+    
+    EXTRA_WEIGHT_ARGS="--weight-column $IN1 logweight_total --weight-column-is-log $IN1 logweight_total --weight-column $IN2 logweight_total --weight-column-is-log $IN2 logweight_total --weight-column $OUT1 $NEW_WEIGHT --weight-column-is-log $OUT1 $NEW_WEIGHT --invert-weight-column $OUT1 $NEW_WEIGHT --weight-column $OUT2 $NEW_WEIGHT --weight-column-is-log $OUT2 $NEW_WEIGHT --invert-weight-column $OUT2 $NEW_WEIGHT"
+    
     kde-corner-samples \
         Mmax 'R(M=1.4)' 'R(M=2.0)' 'Lambda(M=1.4)' 'Lambda(M=2.0)' 'pressurec2(baryon_density=5.6e+14)' 'pressurec2(baryon_density=1.68e+15)' \
         --column-label Mmax '$M_\mathrm{max}\ [M_\odot]$' \
@@ -72,17 +92,15 @@ do
         --column-range 'pressurec2(baryon_density=1.68e+15)' 14.2 15.5 \
         --column-bandwidth 'pressurec2(baryon_density=1.68e+15)' 0.10 \
         --column-multiplier "pressurec2(baryon_density=1.68e+15)" .43429\
-        -s $NP $NP_SAMPS \
-        --weight-column $NP logweight_total\
-        --weight-column-is-log $NP logweight_total\
-        -s $NPPRIOR $NP_SAMPS\
-        -s $PARPRIOR $PAR_SAMPS\
-        -s $PAR $PAR_SAMPS \
-        $DEFAULT_COLOR_SCHEME\
-        --weight-column $PAR logweight_total\
-        --weight-column-is-log $PAR logweight_total\
+        -s "$IN1" "$SAMPS1" \
+        -s "$OUT1" "$SAMPS1"\
+        -s "$IN2" "$SAMPS2"\
+        -s "$OUT2" "$SAMPS2"\
+        $DEFAULT_WEIGHT_ARGS\
+        $EXTRA_WEIGHT_ARGS\
+        $COLOR_SCHEME\
         --output-dir $MAIN_DIR \
-        --tag "covariates-newnicer-comparative-events" \
+        --tag "$THIS_TAG" \
         --num-proc 8 \
         --num-points $NUM_POINTS \
         --level 0.9 \

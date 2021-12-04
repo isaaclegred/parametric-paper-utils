@@ -2,7 +2,6 @@
 
 ### make plots of nuclear parameters alongside EoS params and macroscopic observables
 
-# E_beta,E_PNM,x,S0,L,Ksym,eps_total,eps_electron,mu_electron,EoS,Mmax,numbranches,logweight_NICER,logweight_GW170817,logweight_GW190425,logweight_J0348,logweight_J0740,logweight_J1614,pressurec2(baryon_density=1.4e+14),pressurec2(baryon_density=2.8e+14),pressurec2(baryon_density=4.2e+14),pressurec2(baryon_density=5.6e+14),pressurec2(baryon_density=8.4e+14),pressurec2(baryon_density=1.12e+15),energy_densityc2(baryon_density=1.4e+14),energy_densityc2(baryon_density=2.8e+14),energy_densityc2(baryon_density=4.2e+14),energy_densityc2(baryon_density=5.6e+14),energy_densityc2(baryon_density=8.4e+14),energy_densityc2(baryon_density=1.12e+15),R(M=1.4),R(M=1.6),Lambda(M=1.4),Lambda(M=1.6)
 
 #-------------------------------------------------
 
@@ -11,15 +10,15 @@ MAX_NUM_SAMPLES=100000
 
 
 
-
 #---
 
-# plot different posteriors for the same set of prior draws
-# this is irrelevant, at this point all of the
-# data is already collated, just need one tag value
-TAGS="/home/philippe.landry/nseos/eos/gp/mrgagn/"
+declare -A TAGMAP
+TAGMAP["sp"]="SPECTRAL"
+TAGMAP["pp"]="PIECEWISE"
+TAGMAP["cs"]="SPEED-OF-SOUND"
 
-for TAG in $TAGS
+PARTAGS="cs sp pp"
+for TAG in $PARTAGS
 do
 
     echo "----------"
@@ -29,21 +28,27 @@ do
     # This script should only be called by condor, and in particular with
     # the submit file that requires you to be in the correct directory anways
     # this shouldn't cause big problems for now
-  
     cd ../..
     MAIN_DIR=$(pwd)
     cd Utils/Plotting
-    
+
+    PARTAG=${TAGMAP[$TAG]}
     NP_SAMPS=$MAIN_DIR"/corrected_np_all_post.csv"
-    PAR_SAMPS=$MAIN_DIR"/corrected_sp_all_post.csv"
     
+
     NPPRIOR="PRIOR(NONPARAMETRIC)"
-    PARPRIOR="PRIOR(PARAMETRIC)"
     PSR="PSR"
     PSRGW="PSR+GW"
     NP="NONPARAMETRIC"
-    PAR="PARAMETRIC"
-    DEFAULT_COLOR_SCHEME="--color $NP deepskyblue ""--color $NPPRIOR blue "" --color $PAR magenta ""--color  $PARPRIOR red"
+
+    # These things will have to change for each parametric instance
+    PAR_SAMPS=$MAIN_DIR"/corrected_${TAG}_all_post.csv"
+    PARPRIOR="PRIOR(${PARTAG})"
+    PAR="$PARTAG"
+    
+    
+    DEFAULT_COLOR_SCHEME="--color $NP deepskyblue ""--color $NPPRIOR blue "" --color $PAR orange  ""--color  $PARPRIOR darkgoldenrod"
+    DEFAULT_VARIABLE_RANGES="--column-range Mmax 1.8 3.0"
  
     kde-corner-samples \
         Mmax 'R(M=1.4)' 'R(M=2.0)' 'Lambda(M=1.4)' 'Lambda(M=2.0)' 'pressurec2(baryon_density=5.6e+14)' 'pressurec2(baryon_density=1.68e+15)' \
@@ -79,11 +84,13 @@ do
         -s $PARPRIOR $PAR_SAMPS\
         -s $PAR $PAR_SAMPS \
         $DEFAULT_COLOR_SCHEME\
+        --linestyle $NPPRIOR "dashdot"\
+        --linestyle $PARPRIOR "dashdot"\
         --weight-column $PAR logweight_total\
         --weight-column-is-log $PAR logweight_total\
         --output-dir $MAIN_DIR \
-        --tag "covariates-newnicer-comparative-events" \
-        --num-proc 8 \
+        --tag "$TAG-comparison" \
+        --num-proc 16 \
         --num-points $NUM_POINTS \
         --level 0.9 \
         --legend \

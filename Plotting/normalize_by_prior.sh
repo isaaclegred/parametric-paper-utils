@@ -6,8 +6,8 @@ MAX_NUM_SAMPLES=100000
 
 
 # This may need to change if you change the overall convention
-TAGS="pp_all"
-BANDWIDTH_TAGS=".11"
+TAGS="sp_all"
+BANDWIDTH_TAGS=".12"
 COLUMN_NAMES="R(M=1.4)"
 # This is kinda a silly thing to do, but it will work for now
 # Hardcode this if it's easier than worrying about where

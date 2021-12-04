@@ -30,15 +30,15 @@ do
     cd Utils/Plotting
     
     NP_SAMPS=$MAIN_DIR"/corrected_np_all_post.csv"
-    PAR_SAMPS=$MAIN_DIR"/corrected_sp_all_post.csv"
+    PAR_SAMPS=$MAIN_DIR"/corrected_pp_all_post.csv"
     REWEIGHTING_FACTOR="R(M=1.4)_prior_kde"
     
     NPPRIOR="PRIOR(NONPARAMETRIC)"
-    PARPRIOR="PRIOR(SPECTRAL)"
+    PARPRIOR="PRIOR(PIECEWISE)"
     PSR="PSR"
     PSRGW="PSR+GW"
     NP="NONPARAMETRIC"
-    PAR="SPECTRAL"
+    PAR="PIECEWISE"
 
     DEFAULT_COLOR_SCHEME="--color $NP deepskyblue ""--color $NPPRIOR blue "" --color $PAR magenta ""--color  $PARPRIOR red"
         
@@ -69,7 +69,7 @@ do
         --weight-column-is-log $PAR "$REWEIGHTING_FACTOR" \
         $DEFAULT_COLOR_SCHEME \
         --output-dir $MAIN_DIR \
-        --tag "Mmax_R_1p4_spectral_normalized" \
+        --tag "Mmax_R_1p4_piecewise_normalized" \
         --num-proc 2 \
         --num-points $NUM_POINTS \
         --level 0.9 \

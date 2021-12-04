@@ -1,0 +1,89 @@
+#!/bin/bash
+
+
+MAX_NUM_SAMPLES=320000
+
+counter="$1"
+echo "counter in add-covariates"
+echo $counter
+TAGS="$2"
+EOS_DIR_TAGS="$3"
+EOS_CS2C2_DIR_TAGS="$4"
+EOS_PER_DIR="$5"
+
+#Sometimes need this
+# --copy-column  "logweight_Romani_J1810" 
+
+
+# These should be the only things that *need* to change
+NONPAR_EOS_DIR="/home/philippe.landry/gpr-eos-stacking/EoS/mrgagn/"
+NONPAR_EOS_DIR_cs2c2="/home/isaac.legred/local_mrgagn_big_with_cs2/"
+SPECTRAL_EOS_DIR="/home/isaac.legred/parametric-eos-priors/eos_draws/production_eos_draw_spectral/"
+PIECEWISE_EOS_DIR="/home/isaac.legred/parametric-eos-priors/eos_draws/production_eos_draw_piecewise/"
+SOS_EOS_DIR="/home/isaac.legred/parametric-eos-priors/eos_draws/production_eos_draw_sos/"
+
+
+echo "Tags in add-covariates"
+echo $TAGS
+# This is kinda a silly thing to do, but it will work for now
+# Hardcode this if it's easier than worrying about where
+# you call functions from
+cd ../..
+MAIN_DIR=$(pwd)
+cd Utils/Plotting
+echo "eos dir tags are"
+echo $EOS_DIR_TAGS
+
+EOS_COUNT_ARR=($EOS_PER_DIR)
+
+PRETAGS=($TAGS)
+PRETAG=${PRETAGS[$counter]}
+
+TAG="/corrected_"$PRETAG"_post.csv"
+EOS_DIRS=($EOS_DIR_TAGS)
+EOS_DIR=${EOS_DIRS[$counter]}
+EOS_DIRS_CS2=($EOS_CS2C2_DIR_TAGS)
+EOS_DIR_cs2c2=${EOS_DIRS_CS2[$counter]}
+echo "Eos dir and cs2 eos dir"
+echo $EOS_DIR
+echo $EOS_DIR_cs2c2
+INPATH=$MAIN_DIR$TAG
+echo $INPATH
+OUTPATH=$INPATH
+EOS_NUM_PER_DIR=${EOS_COUNT_ARR[$counter]}
+
+    
+# # # Get the max masses
+$(which process2extrema) \
+    $OUTPATH \
+    $OUTPATH \
+    M\
+    --new-column M Mmax Mmin \
+    --column-range M 0.1 7.0\
+    --eos-column eos \
+    --eos-dir ${EOS_DIR} \
+    --eos-num-per-dir ${EOS_NUM_PER_DIR} \
+    --eos-basename 'macro-draw-%(draw)06d.csv' \
+    --max-num-samples $MAX_NUM_SAMPLES \
+    --Verbose
+
+
+# # look up macroscopic paramers
+$(which process2samples) \
+    $OUTPATH \
+    $OUTPATH \
+    M \
+    R \
+    --eos-column eos \
+    --eos-dir ${EOS_DIR} \
+    --eos-num-per-dir ${EOS_NUM_PER_DIR} \
+    --eos-basename 'macro-draw-%(draw)06d.csv' \
+    --selection-rule random \
+    --branches-basename 'macro-draw-%(draw)06d-branches.csv' rhoc start_baryon_density end_baryon_density \
+    --branches-dir $EOS_DIR_cs2c2 \
+    --default-value R 4.13 \
+    --reference-value 1.4 \
+    --max-num-samples $MAX_NUM_SAMPLES \
+    --overwrite\
+    -v
+

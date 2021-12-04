@@ -32,7 +32,7 @@ import csv
 from scipy.interpolate import interp1d
 from scipy.integrate import solve_ivp
 
-### Path to the directory where this file is
+
 c_cgs=lal.C_SI*100
 rhonuc=2.8e14
 
@@ -98,8 +98,7 @@ def apply_if(f, x, condition):
 # If we don't want the units in /c2 units
 def regularize_c2_scaling(data_curve, variables):
     '''
-    If any `variables` contain the substring c2, this indicates they are divided by c2, this function multiplies back this c2, in 
-    cgs, to these variables.
+    If any `variables` contain the substring c2, this indicates they are divided by c2, this function multiplies back this c2, in cgs, to these variables.
     '''
     fix_this_scaling = lambda name : ("c2" in name)
     modified_data_curve = (apply_if(lambda data : data*c_cgs**2, data, fix_this_scaling(variables[i])) for (i, data) in enumerate(data_curve))
@@ -114,14 +113,14 @@ def normalize_density(data_curve, variables):
 ######################################################
 # PLOT FAIR DRAWS
 ######################################################
-def plot_fair_draws(these_logweights, these_vars, eos_dir, N=1, regularize_cs2_scaling=True, divide_by_rho_nuc=False):
+def plot_fair_draws(these_logweights, these_vars, eos_dir, N=1, regularize_cs2_scaling=True, divide_by_rho_nuc=False, eos_per_dir=1000,color=None, lw=.7):
     for i in range(N):
-        data = draw_curve(eos_dir = sp_eos_dir,eos_per_dir=100, variables=these_vars, logweights=these_logweights)
+        data = draw_curve(eos_dir = eos_dir, eos_per_dir=eos_per_dir, variables=these_vars, logweights=these_logweights)
         if regularize_cs2_scaling:
             data = regularize_c2_scaling(data, these_vars)
         if divide_by_rho_nuc:
             data = normalize_density(data, these_vars)
-        plt.plot(*data, color="k", lw=.7)
+        plt.plot(*data, color=color, lw=lw)
 
 # Special helper functions for normalizing a rho axis
 get_x_label = lambda normalize_axis : '$\\rho \,(\mathrm{g/cm}^3)$' if not normalize_axis else  '$\\rho \,( \\rho_{\mathrm{nuc}})$'
@@ -133,24 +132,27 @@ get_x_lim = lambda normalize_axis : (6e13/rhonuc,2.8e15/rhonuc) if normalize_axi
 ################################
 
 
-def plot_generic_p_rho_curve(post_path, prior_path, post_color="magenta", prior_color="red", this_label='GENERIC', 
-                             lower=5, center=50, upper=95, divide_by_rho_nuc=False):
+
+def plot_generic_p_rho_envelope(post_path, prior_path, post_color="magenta", prior_color="red", this_label='GENERIC', lower=5, center=50, upper=95, divide_by_rho_nuc=False, no_prior=False, prior_linestyle="-.", prior_label=None, lw=2.5):
     ######################################################
     # GENERIC PRIOR
     ######################################################
 
-    columns = open(prior_path, 'r').readline().strip().split(',')
-    data = np.loadtxt(prior_path, delimiter=',', skiprows=1)
-    baryon_density = np.array([float(_.split('=')[1][:-1]) for _ in columns[1:]])
-    if divide_by_rho_nuc:
-        baryon_density = baryon_density/rhonuc
-    pressures50 = data[center,:]*c_cgs*c_cgs
-    pressures5 = data[lower,:]*c_cgs*c_cgs
-    pressures95 = data[upper,:]*c_cgs*c_cgs
-
-    #plt.fill_between(baryon_density,pressures5[1:],pressures95[1:],color='r',alpha=0.2)
-    plt.plot(baryon_density,pressures5[1:],c=prior_color,lw=2.5,label=f'PRIOR({this_label})')
-    plt.plot(baryon_density,pressures95[1:],c=prior_color,lw=2.5)
+    if not no_prior:
+        if prior_label is None:
+            prior_label = this_label + " (prior)"
+        columns = open(prior_path, 'r').readline().strip().split(',')
+        data = np.loadtxt(prior_path, delimiter=',', skiprows=1)
+        baryon_density = np.array([float(_.split('=')[1][:-1]) for _ in columns[1:]])
+        if divide_by_rho_nuc:
+            baryon_density = baryon_density/rhonuc
+        pressures50 = data[center,:]*c_cgs*c_cgs
+        pressures5 = data[lower,:]*c_cgs*c_cgs
+        pressures95 = data[upper,:]*c_cgs*c_cgs
+            
+        #plt.fill_between(baryon_density,pressures5[1:],pressures95[1:],color='r',alpha=0.2)
+        plt.plot(baryon_density,pressures5[1:],c=prior_color,lw=lw,linestyle=prior_linestyle,label=f'{prior_label}')
+        plt.plot(baryon_density,pressures95[1:],c=prior_color,lw=lw, linestyle=prior_linestyle)
 
     ######################################################
     # GENERIC POSTERIOR
@@ -161,14 +163,14 @@ def plot_generic_p_rho_curve(post_path, prior_path, post_color="magenta", prior_
     baryon_density = np.array([float(_.split('=')[1][:-1]) for _ in columns[1:]])
     if divide_by_rho_nuc:
         baryon_density = baryon_density/rhonuc
-    pressures50 = data[50,:]*c_cgs*c_cgs
-    pressures5 = data[5,:]*c_cgs*c_cgs
-    pressures95 = data[95,:]*c_cgs*c_cgs
+    pressures50 = data[center,:]*c_cgs*c_cgs
+    pressures5 = data[lower,:]*c_cgs*c_cgs
+    pressures95 = data[upper,:]*c_cgs*c_cgs
 
     plt.fill_between(baryon_density,pressures5[1:],pressures95[1:],alpha=0.4, color=post_color)
     #plt.plot(baryon_density,pressures50[1:],c='b')
-    plt.plot(baryon_density,pressures5[1:],c=post_color,lw=2.5,label=this_label)
-    plt.plot(baryon_density,pressures95[1:],c=post_color,lw=2.5)
+    plt.plot(baryon_density,pressures5[1:],c=post_color,lw=lw,label=this_label)
+    plt.plot(baryon_density,pressures95[1:],c=post_color,lw=lw)
 
 def complete_p_rho_plot(divide_by_rho_nuc=False):
     if divide_by_rho_nuc:
@@ -179,9 +181,10 @@ def complete_p_rho_plot(divide_by_rho_nuc=False):
         local_rhonuc = rhonuc
         local_rho2nuc = 2*rhonuc
         local_rho6nuc = 6*rhonuc
-    plt.axvline(local_rhonuc,c='k')
-    plt.axvline(local_rho2nuc,c='k')
-    plt.axvline(local_rho6nuc,c='k')
+    if not divide_by_rho_nuc:
+        plt.axvline(local_rhonuc,c='k')
+        plt.axvline(local_rho2nuc,c='k')
+        plt.axvline(local_rho6nuc,c='k')
 
     plt.tick_params(direction='in')
     plt.yscale('log')
@@ -209,18 +212,23 @@ def complete_p_rho_plot(divide_by_rho_nuc=False):
 
 Msol_in_km=lal.MSUN_SI*lal.G_SI/lal.C_SI/lal.C_SI/1000
  
-def plot_generic_mr_curve(post_path, prior_path, post_color="magenta", prior_color="red", this_label='GENERIC', lower=5, median=50, upper=95):
-    columns = open(prior_path, 'r').readline().strip().split(',')
-    data = np.loadtxt(prior_path, delimiter=',', skiprows=1)
-    mass = [float(_.split('=')[1][:-1]) for _ in columns[1:]]
-    radius50 = data[median,:]
-    radius5 = data[lower,:]
-    radius95 = data[upper,:]
-
-    #plt.fill_between(radius5[1:],radius95[1:],mass,color='r',alpha=0.2)
-    plt.plot(radius5[1:],mass,c=prior_color,lw=2.5,label=f'PRIOR({this_label})',linestyle="-.")
-    plt.plot(radius95[1:],mass,c=prior_color,lw=2.5,linestyle="-.")
-
+def plot_generic_mr_envelope(post_path, prior_path, post_color="magenta", prior_color="red", this_label='GENERIC', lower=5, median=50,
+                          upper=95, no_prior=False,
+                          prior_linestyle="-.", lw=2.5, prior_label=None):
+    if not no_prior:
+        if prior_label is None:
+            prior_label = this_label + " (prior)"
+        columns = open(prior_path, 'r').readline().strip().split(',')
+        data = np.loadtxt(prior_path, delimiter=',', skiprows=1)
+        mass = [float(_.split('=')[1][:-1]) for _ in columns[1:]]
+        radius50 = data[median,:]
+        radius5 = data[lower,:]
+        radius95 = data[upper,:]
+        
+        #plt.fill_between(radius5[1:],radius95[1:],mass,color='r',alpha=0.2)
+        plt.plot(radius5[1:],mass,c=prior_color,lw=lw,label=f'{prior_label})',linestyle=prior_linestyle)
+        plt.plot(radius95[1:],mass,c=prior_color,lw=lw,linestyle=prior_linestyle)
+        
     columns = open(post_path, 'r').readline().strip().split(',')
     data = np.loadtxt(post_path, delimiter=',', skiprows=1)
     mass = [float(_.split('=')[1][:-1]) for _ in columns[1:]]
@@ -230,8 +238,8 @@ def plot_generic_mr_curve(post_path, prior_path, post_color="magenta", prior_col
 
     plt.fill_betweenx(mass, radius5[1:],radius95[1:],alpha=0.4, color=post_color)
     #plt.plot(mass,radius50[1:],c='b')
-    plt.plot(radius5[1:],mass,c=post_color,lw=2.5,label=this_label)
-    plt.plot(radius95[1:],mass,c=post_color,lw=2.5)
+    plt.plot(radius5[1:],mass,c=post_color,lw=lw,label=this_label)
+    plt.plot(radius95[1:],mass,c=post_color,lw=lw)
 
 def complete_mr_plot():
     plt.tight_layout()
@@ -252,21 +260,23 @@ def complete_mr_plot():
     plt.legend(frameon=True,fancybox=True,framealpha=0.5,loc="lower left",fontsize=18)
 
 
-def plot_generic_cs2_curve(post_path, prior_path, post_color="magenta", prior_color="red", this_label='GENERIC', lower=5, center=50, upper=95, divide_by_rho_nuc=False):
+def plot_generic_cs2_envelope(post_path, prior_path, post_color="magenta", prior_color="red", this_label='GENERIC', lower=5, center=50, upper=95, divide_by_rho_nuc=False, no_prior=False, prior_linestyle="-.", lw=2.5, prior_label=None):
     ######################################################
     # GENERIC PRIOR
     ######################################################
-    columns = open(prior_path, 'r').readline().strip().split(',')
-    data = np.loadtxt(prior_path, delimiter=',', skiprows=1)
-    baryon_density = np.array([float(_.split('=')[1][:-1]) for _ in columns[1:]])
-    if divide_by_rho_nuc:
-        baryon_density = baryon_density/rhonuc
-    cs2s50 = data[50,:]
-    cs2s5 = data[5,:]
-    cs2s95 = data[95,:]
-
-    plt.plot(baryon_density,cs2s5[1:],c=prior_color,lw=2.5,linestyle="-", label=f'PRIOR({this_label})')
-    plt.plot(baryon_density,cs2s95[1:],c=prior_color,lw=2.5, linestyle="-")
+    if not no_prior:
+        if prior_label is None:
+            prior_label = this_label + " (prior)"
+        columns = open(prior_path, 'r').readline().strip().split(',')
+        data = np.loadtxt(prior_path, delimiter=',', skiprows=1)
+        baryon_density = np.array([float(_.split('=')[1][:-1]) for _ in columns[1:]])
+        if divide_by_rho_nuc:
+            baryon_density = baryon_density/rhonuc
+            cs2s50 = data[50,:]
+            cs2s5 = data[5,:]
+            cs2s95 = data[95,:]
+            plt.plot(baryon_density,cs2s5[1:],c=prior_color,lw=lw,linestyle=prior_linestyle, label=f'{prior_label}')
+            plt.plot(baryon_density,cs2s95[1:],c=prior_color,lw=lw, linestyle=prior_linestyle)
     
     ######################################################
     # GENERIC POST
@@ -281,8 +291,8 @@ def plot_generic_cs2_curve(post_path, prior_path, post_color="magenta", prior_co
     cs2s95 = data[95,:]
 
     plt.fill_between(baryon_density,cs2s5[1:],cs2s95[1:],color=post_color,alpha=0.25)
-    plt.plot(baryon_density,cs2s5[1:],c=post_color,lw=2.5,label=this_label)
-    plt.plot(baryon_density,cs2s95[1:],c=post_color,lw=2.5)
+    plt.plot(baryon_density,cs2s5[1:],c=post_color,lw=lw,label=this_label)
+    plt.plot(baryon_density,cs2s95[1:],c=post_color,lw=lw)
 def complete_cs2_plot(divide_by_rho_nuc=False, log_cs2_axis=True):
     if divide_by_rho_nuc:
         local_rhonuc = 1
@@ -292,9 +302,10 @@ def complete_cs2_plot(divide_by_rho_nuc=False, log_cs2_axis=True):
         local_rhonuc = rhonuc
         local_rho2nuc = 2*rhonuc
         local_rho6nuc = 6*rhonuc
-    plt.axvline(local_rhonuc,c='k')
-    plt.axvline(local_rho2nuc,c='k')
-    plt.axvline(local_rho6nuc,c='k')
+    if not divide_by_rho_nuc:
+        plt.axvline(local_rhonuc,c='k')
+        plt.axvline(local_rho2nuc,c='k')
+        plt.axvline(local_rho6nuc,c='k')
     plt.axhline(1/3, c='k')
 
     plt.tick_params(direction='in')

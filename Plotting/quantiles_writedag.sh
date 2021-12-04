@@ -8,7 +8,9 @@ eos_dir_tags="$3"
 eos_cs2c2_dir_tags="$4"
 eos_per_dir="$5"
 which_quantiles="$6"
-
+outtag="$7"
+logweight_args="$8"
+dont_make_prior="$9"
 
 echo "rundir is"
 echo $rundir
@@ -38,7 +40,7 @@ echo $obslist >> $logfile
 # write sub files
 
 execs=( "get_quantiles" )
-args=( "\"\$(Process) '$tags' '$eos_dir_tags' '$eos_cs2c2_dir_tags' '$eos_per_dir' $which_quantiles\"" )
+args=( "\"\$(Process) '$tags' '$eos_dir_tags' '$eos_cs2c2_dir_tags' '$eos_per_dir' $which_quantiles $outtag '$logweight_args' $dont_make_prior\"" )
 
 for i in $(seq 0 $((${#execs[@]}-1)))
 do
