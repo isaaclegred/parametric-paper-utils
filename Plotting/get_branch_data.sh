@@ -8,12 +8,12 @@ cd Utils/Plotting
 
 
 NONPAR_EOS_DIR="/home/philippe.landry/gpr-eos-stacking/EoS/mrgagn/"
-SPEC_EOS_DIR=$HOME"/parametric-eos-priors/eos_draws/production_eos_draw_spectral/"
+SP_EOS_DIR=$HOME"/parametric-eos-priors/eos_draws/production_eos_draw_spectral/"
 PP_EOS_DIR=$HOME"/parametric-eos-priors/eos_draws/production_eos_draw_piecewise/"
 SOS_EOS_DIR=$HOME"/parametric-eos-priors/eos_draws/production_eos_draw_sos/"
 
-EOS_DIR_TAGS="$SOS_EOS_DIR"
-EOS_PER_DIR="100"
+EOS_DIR_TAGS="$SP_EOS_DIR $PP_EOS_DIR $SOS_EOS_DIR"
+EOS_PER_DIR="100 100 100"
 EOS_COUNT_ARR=($EOS_PER_DIR)
 
 

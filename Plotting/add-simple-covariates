@@ -58,40 +58,22 @@ $(which process2extrema) \
     $OUTPATH \
     $OUTPATH \
     M\
-    --copy-column  "logweight_total" \
     --new-column M Mmax Mmin \
-    --column-range M 0.1 4.0 \
+    --column-range M 0.1 7.0\
     --eos-column eos \
     --eos-dir ${EOS_DIR} \
     --eos-num-per-dir ${EOS_NUM_PER_DIR} \
     --eos-basename 'macro-draw-%(draw)06d.csv' \
     --max-num-samples $MAX_NUM_SAMPLES \
-    -v
-
-# look up pressures
-$(which process2samples) \
-    $OUTPATH \
-    $OUTPATH \
-    baryon_density \
-    pressurec2 energy_densityc2 \
-    --eos-column eos \
-    --eos-dir ${EOS_DIR} \
-    --eos-num-per-dir ${EOS_NUM_PER_DIR} \
-    --eos-basename 'eos-draw-%(draw)06d.csv' \
-    --reference-value 2.8e14 \
-    --reference-value 5.6e14 \
-    --reference-value 1.68e15 \
-    --reference-value 1.96e15 \
-    --max-num-samples $MAX_NUM_SAMPLES \
-    --overwrite\
     --Verbose
+
 
 # # look up macroscopic paramers
 $(which process2samples) \
     $OUTPATH \
     $OUTPATH \
     M \
-    R Lambda \
+    R \
     --eos-column eos \
     --eos-dir ${EOS_DIR} \
     --eos-num-per-dir ${EOS_NUM_PER_DIR} \
@@ -100,44 +82,8 @@ $(which process2samples) \
     --branches-basename 'macro-draw-%(draw)06d-branches.csv' rhoc start_baryon_density end_baryon_density \
     --branches-dir $EOS_DIR_cs2c2 \
     --default-value R 4.13 \
-    --default-value Lambda 0.0 \
     --reference-value 1.4 \
     --max-num-samples $MAX_NUM_SAMPLES \
     --overwrite\
     -v
-
-# Have to do this becuase need default value to be different
-$(which process2samples) \
-    $OUTPATH \
-    $OUTPATH \
-    M \
-    R Lambda\
-    --eos-column eos \
-    --eos-dir ${EOS_DIR} \
-    --eos-num-per-dir ${EOS_NUM_PER_DIR} \
-    --eos-basename 'macro-draw-%(draw)06d.csv' \
-    --selection-rule random \
-    --branches-basename 'macro-draw-%(draw)06d-branches.csv' rhoc start_baryon_density end_baryon_density \
-    --branches-dir $EOS_DIR_cs2c2 \
-    --default-value R 5.91 \
-    --default-value Lambda 0 \
-    --reference-value 2.0 \
-    --max-num-samples $MAX_NUM_SAMPLES \
-    --copy-column  "logweight_total" \
-    --copy-column "Mmax" \
-    --copy-column "pressurec2(baryon_density=2.8e+14)" \
-    --copy-column "pressurec2(baryon_density=5.6e+14)"\
-    --copy-column "pressurec2(baryon_density=1.68e+15)"\
-    --copy-column "pressurec2(baryon_density=1.96e+15)"\
-    --copy-column "energy_densityc2(baryon_density=2.8e+14)"\
-    --copy-column "energy_densityc2(baryon_density=5.6e+14)"\
-    --copy-column "energy_densityc2(baryon_density=1.68e+15)" \
-    --copy-column "energy_densityc2(baryon_density=1.96e+15)" \
-    --copy-column "Lambda(M=1.4)" \
-    --copy-column "R(M=1.4)"\
-    --overwrite\
-    -v
-
-
-
 

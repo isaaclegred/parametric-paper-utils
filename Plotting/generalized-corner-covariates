@@ -2,6 +2,7 @@
 
 ### make plots of nuclear parameters alongside EoS params and macroscopic observables
 
+# E_beta,E_PNM,x,S0,L,Ksym,eps_total,eps_electron,mu_electron,EoS,Mmax,numbranches,logweight_NICER,logweight_GW170817,logweight_GW190425,logweight_J0348,logweight_J0740,logweight_J1614,pressurec2(baryon_density=1.4e+14),pressurec2(baryon_density=2.8e+14),pressurec2(baryon_density=4.2e+14),pressurec2(baryon_density=5.6e+14),pressurec2(baryon_density=8.4e+14),pressurec2(baryon_density=1.12e+15),energy_densityc2(baryon_density=1.4e+14),energy_densityc2(baryon_density=2.8e+14),energy_densityc2(baryon_density=4.2e+14),energy_densityc2(baryon_density=5.6e+14),energy_densityc2(baryon_density=8.4e+14),energy_densityc2(baryon_density=1.12e+15),R(M=1.4),R(M=1.6),Lambda(M=1.4),Lambda(M=1.6)
 
 #-------------------------------------------------
 
@@ -9,16 +10,23 @@ NUM_POINTS=101
 MAX_NUM_SAMPLES=100000
 
 
+NPPRIOR="PRIOR(NONPARAMETRIC)"
+SPPRIOR="SPECTRAL(PARAMETRIC)"
+PSR="PSR"
+PSRGW="PSR+GW"
+NP="NONPARAMETRIC"
+SP="SPECTRAL"
+NP_REW="NONPARAMETRIC(REWEIGHTED-M)"
+SP_REW="SPECTRAL(REWEIGHTED-M)"
 
 #---
 
-declare -A TAGMAP
-TAGMAP["sp"]="SPECTRAL"
-TAGMAP["pp"]="PIECEWISE"
-TAGMAP["cs"]="SPEED-OF-SOUND"
+# plot different posteriors for the same set of prior draws
+# this is irrelevant, at this point all of the
+# data is already collated, just need one tag value
+TAGS="/home/philippe.landry/nseos/eos/gp/mrgagn/"
 
-PARTAGS="cs sp pp"
-for TAG in $PARTAGS
+for TAG in $TAGS
 do
 
     echo "----------"
@@ -28,28 +36,35 @@ do
     # This script should only be called by condor, and in particular with
     # the submit file that requires you to be in the correct directory anways
     # this shouldn't cause big problems for now
+  
     cd ../..
     MAIN_DIR=$(pwd)
     cd Utils/Plotting
 
-    PARTAG=${TAGMAP[$TAG]}
-    NP_SAMPS=$MAIN_DIR"/corrected_np_all_post.csv"
+    THIS_TAG="compare_r1p4_reweighting_sp_np"
     
+    SAMPS1=$MAIN_DIR"/corrected_np_all_post.csv"
+    SAMPS2=$MAIN_DIR"/corrected_sp_all_post.csv"
 
-    NPPRIOR="PRIOR(NONPARAMETRIC)"
-    PSR="PSR"
-    PSRGW="PSR+GW"
-    NP="NONPARAMETRIC"
+    IN1="$NP"
+    IN2="$SP"
+    OUT1="$NP_REW"
+    OUT2="$SP_REW"
 
-    # These things will have to change for each parametric instance
-    PAR_SAMPS=$MAIN_DIR"/corrected_${TAG}_all_post.csv"
-    PARPRIOR="PRIOR(${PARTAG})"
-    PAR="$PARTAG"
+    NEW_WEIGHT="Mmax_prior_kde"
     
+    DEFAULT_COLOR_SCHEME="--color $OUT1 deepskyblue ""--color $IN2 blue "" --color $OUT2 magenta ""--color  $IN2 red"
     
-    DEFAULT_COLOR_SCHEME="--color $NP deepskyblue ""--color $NPPRIOR blue "" --color $PAR orange  ""--color  $PARPRIOR darkgoldenrod"
-    DEFAULT_VARIABLE_RANGES="--column-range Mmax 1.8 3.0"
- 
+    SPECIFIC_COLOR_SCHEME="--color $IN1 deepskyblue ""--color $OUT1 teal "" --color $IN2 magenta ""--color  $OUT2 orange "
+
+    COLOR_SCHEME="$SPECIFIC_COLOR_SCHEME"
+
+
+    # This would give prior1, posterior1, prior2, posterior2
+    DEFAULT_WEIGHT_ARGS="--weight-column $OUT1 logweight_total --weight-column-is-log $OUT1 logweight_total --weight-column $OUT2 logweight_total --weight-column-is-log $OUT2 logweight_total"
+    
+    EXTRA_WEIGHT_ARGS="--weight-column $IN1 logweight_total --weight-column-is-log $IN1 logweight_total --weight-column $IN2 logweight_total --weight-column-is-log $IN2 logweight_total --weight-column $OUT1 $NEW_WEIGHT --weight-column-is-log $OUT1 $NEW_WEIGHT --invert-weight-column $OUT1 $NEW_WEIGHT --weight-column $OUT2 $NEW_WEIGHT --weight-column-is-log $OUT2 $NEW_WEIGHT --invert-weight-column $OUT2 $NEW_WEIGHT"
+    
     kde-corner-samples \
         Mmax 'R(M=1.4)' 'R(M=2.0)' 'Lambda(M=1.4)' 'Lambda(M=2.0)' 'pressurec2(baryon_density=5.6e+14)' 'pressurec2(baryon_density=1.68e+15)' \
         --column-label Mmax '$M_\mathrm{max}\ [M_\odot]$' \
@@ -77,20 +92,16 @@ do
         --column-range 'pressurec2(baryon_density=1.68e+15)' 14.2 15.5 \
         --column-bandwidth 'pressurec2(baryon_density=1.68e+15)' 0.10 \
         --column-multiplier "pressurec2(baryon_density=1.68e+15)" .43429\
-        -s $NP $NP_SAMPS \
-        --weight-column $NP logweight_total\
-        --weight-column-is-log $NP logweight_total\
-        -s $NPPRIOR $NP_SAMPS\
-        -s $PARPRIOR $PAR_SAMPS\
-        -s $PAR $PAR_SAMPS \
-        $DEFAULT_COLOR_SCHEME\
-        --linestyle $NPPRIOR "dashdot"\
-        --linestyle $PARPRIOR "dashdot"\
-        --weight-column $PAR logweight_total\
-        --weight-column-is-log $PAR logweight_total\
+        -s "$IN1" "$SAMPS1" \
+        -s "$OUT1" "$SAMPS1"\
+        -s "$IN2" "$SAMPS2"\
+        -s "$OUT2" "$SAMPS2"\
+        $DEFAULT_WEIGHT_ARGS\
+        $EXTRA_WEIGHT_ARGS\
+        $COLOR_SCHEME\
         --output-dir $MAIN_DIR \
-        --tag "$TAG-comparison" \
-        --num-proc 16 \
+        --tag "$THIS_TAG" \
+        --num-proc 8 \
         --num-points $NUM_POINTS \
         --level 0.9 \
         --legend \

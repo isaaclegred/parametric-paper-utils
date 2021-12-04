@@ -1,4 +1,4 @@
-universe   = vanilla
+0;95;0cuniverse   = vanilla
 Executable = ./process_quantiles_mr.sh
 Arguments  =
 Log        = ./run_mr/mr.log
